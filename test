@@ -1,0 +1,4 @@
+#!/bin/bash
+
+make clean && make test && make && make install && jalv.gtk 'http://github.com/jessecrossen/csynth'
+

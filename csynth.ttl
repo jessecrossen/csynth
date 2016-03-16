@@ -1,0 +1,112 @@
+@prefix atom:   <http://lv2plug.in/ns/ext/atom#> .
+@prefix csynth: <http://github.com/jessecrossen/csynth#> .
+@prefix doap:   <http://usefulinc.com/ns/doap#> .
+@prefix foaf:   <http://xmlns.com/foaf/0.1/> .
+@prefix guiext: <http://lv2plug.in/ns/extensions/ui#> .
+@prefix lv2:    <http://lv2plug.in/ns/lv2core#> .
+@prefix patch:  <http://lv2plug.in/ns/ext/patch#> .
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix state:  <http://lv2plug.in/ns/ext/state#> .
+@prefix units:  <http://lv2plug.in/ns/extensions/units#> .
+@prefix urid:   <http://lv2plug.in/ns/ext/urid#> .
+@prefix work:   <http://lv2plug.in/ns/ext/worker#> .
+
+<http://github.com/jessecrossen/csynth#gui>
+  a guiext:GtkUI;
+  guiext:binary <csynth_gui.so>;
+  guiext:requiredFeature guiext:makeResident ;
+  ui:portNotification [
+		ui:plugin <http://github.com/jessecrossen/csynth> ;
+		lv2:symbol "notify" ;
+		ui:notifyType atom:Blank
+	] .
+	
+ <http://github.com/jessecrossen/csynth#codepath>
+ 	a lv2:Parameter ;
+ 	rdfs:label "code path" ;
+ 	rdfs:range atom:Path ;
+ 	rdfs:comment "A path to the C++ synth code to build and run." .
+
+<http://github.com/jessecrossen/csynth#autobuild>
+	a lv2:Parameter ;
+	rdfs:label "autobuild" ;
+	rdfs:range atom:Int ;
+	lv2:default 1 ;
+	lv2:minimum 0 ;
+	lv2:maximum 1 ;
+	rdfs:comment "Whether to rebuild the code automatically if it changes." .
+	
+<http://github.com/jessecrossen/csynth#polyphony>
+	a lv2:Parameter ;
+	rdfs:label "polyphony" ;
+	rdfs:range atom:Int ;
+	lv2:default 1 ;
+	lv2:minimum 1 ;
+	lv2:maximum 64 ;
+	rdfs:comment "The maximum number of synth voices that can play at once." .
+	
+<http://github.com/jessecrossen/csynth#bendrange>
+	a lv2:Parameter ;
+	rdfs:label "pitch bend range" ;
+	rdfs:range atom:Float ;
+	lv2:default 2.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 24.0 ;
+	units:unit units:semitone12TET ;
+	rdfs:comment "The maximum number of semitones to bend a note's frequency." .
+
+<http://github.com/jessecrossen/csynth> 
+  a lv2:Plugin ; 
+	a lv2:InstrumentPlugin ;
+	doap:name "Csynth" ;
+	doap:maintainer [ foaf:name "Jesse Crossen" ; ] ;
+	doap:license <http://opensource.org/licenses/isc> ;
+	
+	lv2:requiredFeature urid:map ;
+	lv2:requiredFeature work:schedule ;
+	lv2:optionalFeature lv2:hardRTCapable ;
+	lv2:optionalFeature state:loadDefaultState ;
+	
+	lv2:extensionData work:interface ;
+	lv2:extensionData state:interface ;
+	
+	guiext:ui <http://github.com/jessecrossen/csynth#gui> ;
+	
+	lv2:port [
+	  a lv2:InputPort;
+	  a atom:AtomPort ;
+	  atom:bufferType atom:Sequence ;
+    atom:supports <http://lv2plug.in/ns/ext/midi#MidiEvent> ;
+    lv2:designation lv2:control ;
+		lv2:index 0 ;
+		lv2:symbol "midi" ;
+		lv2:name "MIDI"
+	] , [
+    a lv2:OutputPort ;
+    a atom:AtomPort ;
+    atom:bufferType atom:Sequence ;
+    atom:supports patch:Message ;
+    lv2:designation lv2:control ;
+    lv2:index 1 ;
+    lv2:symbol "notify" ;
+    lv2:name "Notify"
+  ] , [
+	  a lv2:OutputPort ;
+		a lv2:AudioPort ;
+		lv2:index 2 ;
+		lv2:symbol "out" ;
+		lv2:name "Out"
+	] ;
+	
+	patch:writable <http://github.com/jessecrossen/csynth#codepath> ;
+	patch:writable <http://github.com/jessecrossen/csynth#polyphony> ;
+	patch:writable <http://github.com/jessecrossen/csynth#bendrange> ;
+	patch:writable <http://github.com/jessecrossen/csynth#autobuild> ;
+	
+	state:state [
+		<http://github.com/jessecrossen/csynth#codepath> <presets/new.cpp> ;
+		<http://github.com/jessecrossen/csynth#autobuild> 1 ;
+		<http://github.com/jessecrossen/csynth#polyphony> 1 ;
+		<http://github.com/jessecrossen/csynth#bendrange> 2.0
+	] .
